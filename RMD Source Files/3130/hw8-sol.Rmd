@@ -1,0 +1,274 @@
+---
+title: "HW 8 Solutions"
+author: "Tom Fletcher"
+date: "December 12, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+__This solution set is for use by students in CS 3130 / ECE 3530 in Fall 2017 ONLY. Distribution outside of the class will be considered cheating.__
+
+## Problem 1
+
+Read in the cardiac data:
+```{r}
+cardiac = read.csv("cardiac.dat")
+```
+
+Here is the contingency table. Male/Female are rows, HT/no HT are columns.
+```{r}
+C = matrix(c(sum(cardiac$hxofHT == 0 & cardiac$gender == 0),
+             sum(cardiac$hxofHT == 0 & cardiac$gender == 1),
+             sum(cardiac$hxofHT == 1 & cardiac$gender == 0),
+             sum(cardiac$hxofHT == 1 & cardiac$gender == 1)),
+           2, 2)
+
+C
+```
+
+Let's run the Fisher exact test.
+```{r}
+fisher.test(C, alternative = "greater")
+```
+
+The $p$ value is very high, so we cannot reject the null hypothesis. In fact, if we had used the opposite hypothesis, that women have higher prevalence of hypertension, then we _could_ have rejected the null hypothesis.
+
+
+## Problem 2
+
+```{r}
+maleBP = cardiac$basebp[cardiac$gender == 0]
+femaleBP = cardiac$basebp[cardiac$gender == 1]
+```
+
+## (a)
+
+Null Hypothesis $H_0$: women's mean BP = men's mean BP
+
+Alt Hypothesis $H_1$: women's mean BP < men's mean BP
+
+## (b)
+
+```{r}
+boxplot(maleBP, femaleBP, main = "Blood Pressure for Men vs. Women", names = c("Men", "Women"))
+```
+
+## (c)
+
+```{r}
+## Sample sizes of the two groups:
+n = length(maleBP)
+m = length(femaleBP)
+
+## Calculate pooled standard deviation
+sp = sqrt(((n-1) * var(femaleBP) + (m-1) * var(maleBP)) / (m + n - 2) * (1/m + 1/n))
+```
+
+The $t$ statistic is:
+```{r}
+(tStat = (mean(femaleBP) - mean(maleBP)) / sp)
+```
+
+This is a one-sided test on the left (a.k.a. "less than"). The $p$ value is:
+```{r}
+(pValue = pt(tStat, df = m + n - 2))
+```
+
+We cannot reject the null hypothesis ($p > 0.05$). In fact, if we had tested
+the opposite hypothesis (men's BP < women's BP), then we would be able to
+reject the null hypothesis. This indicates that we had the hypothesis wrong.
+
+
+## (d)
+
+```{r}
+eventBP = cardiac$basebp[cardiac$any.event == 0]
+noEventBP = cardiac$basebp[cardiac$any.event == 1]
+```
+
+Null Hypothesis $H_0$: event mean BP = no-event mean BP
+
+Alt Hypothesis $H_1$: event mean BP > no-event mean BP
+
+```{r}
+boxplot(eventBP, noEventBP, main = "Blood Pressure for Event vs. No Event", names = c("Event", "No Event"))
+```
+
+```{r}
+## Sample sizes of the two groups
+n = length(eventBP)
+m = length(noEventBP)
+
+## Calculate pooled standard deviation
+sp = sqrt(((n-1) * var(eventBP) + (m-1) * var(noEventBP)) / (m + n - 2) * (1/m + 1/n))
+```
+
+The $t$ statistic is:
+```{r}
+(tStat = (mean(eventBP) - mean(noEventBP)) / sp)
+```
+
+This is a one-sided test on the right (a.k.a. "greater than"). The $p$ value is:
+```{r}
+(pValue = 1 - pt(tStat, df = m + n - 2))
+```
+
+Again, we cannot reject the null hypothesis. (This time the "less than"
+hypothesis would have also been non-significant.)
+
+
+## (e)
+
+```{r}
+eventEF = cardiac$baseEF[cardiac$any.event == 0]
+noEventEF = cardiac$baseEF[cardiac$any.event == 1]
+```
+
+Null Hypothesis $H_0$: event mean EF = no-event mean EF
+
+Alt Hypothesis $H_1$: event mean EF < no-event mean EF
+
+```{r}
+boxplot(eventEF, noEventEF, main = "Ejection Fraction for Event vs. No Event", names = c("Event", "No Event"))
+```
+
+```{r}
+## Sample sizes of the two groups
+n = length(eventEF)
+m = length(noEventEF)
+
+## Calculate pooled standard deviation
+sp = sqrt(((n-1) * var(eventEF) + (m-1) * var(noEventEF)) / (m + n - 2) * (1/m + 1/n))
+```
+
+The $t$ statistic is:
+```{r}
+(tStat = (mean(eventEF) - mean(noEventEF)) / sp)
+```
+
+
+This is a one-sided test on the left (a.k.a. "less than"). The $p$ value is:
+```{r}
+(pValue = pt(tStat, df = m + n - 2))
+```
+
+On this one, we can reject the null hypothesis (p < 0.05). So, the data
+supports that people who have a cardiac event have less efficient heart
+pumping.
+
+
+## Problem 3
+
+## (a) 
+
+$H_1 : \rho(X, Y) > 0$
+
+Alternative hypothesis is that there is positive correlation.
+
+## (b)
+
+Scatter plot:
+
+```{r}
+n = dim(iris)[1]
+plot(iris$Petal.Length, iris$Sepal.Length, xlab = "Petal Length", ylab = "Sepal Length", main = "Iris Sepal vs. Petal Length", lwd = 2)
+```
+
+## (c)
+
+Critical value is $t_{1 - \alpha} = F^{-1}(1 - 0.05)$, where $F^{-1} is quantile function of $t(n-2)$ distribution.
+
+```{r}
+(criticalValue = qt(1 - 0.05, df = n - 2))
+```
+
+## (d) 
+
+Use the formula to convert correlation into a $t$ statistic:
+
+```{r}
+r = cor(iris$Petal.Length, iris$Sepal.Length)
+(tStat = r * sqrt((n - 2) / (1 - r^2)))
+```
+
+## (e)
+
+$p$ value is a  right-sided test:
+
+```{r}
+(pValue = 1 - pt(tStat, df = n - 2))
+```
+
+## (f) 
+
+$H1 : \rho(X, Y) < 0$
+
+Alternative is there is a negative correlation.
+
+## (g)
+
+Same steps as (b) - (d) above, just switch to left-sided test
+
+```{r}
+plot(iris$Sepal.Width, iris$Sepal.Length, xlab = "Sepal Width", ylab = "Sepal Length", main = "Iris Sepal Width vs. Length", lwd = 2)
+
+(criticalValue = qt(0.05, df = n - 2))
+
+r = cor(iris$Sepal.Width, iris$Sepal.Length)
+(tStat = r * sqrt((n - 2) / (1 - r^2)))
+
+(pValue = pt(tStat, df = n - 2))
+```
+
+## Problem 4
+
+## (a)
+
+```{r}
+my.regression = function(x, y)
+{
+  n = length(x)
+  beta.hat = (n * sum(x * y) - sum(x)*sum(y)) / (n * sum(x^2) - sum(x)^2)
+
+  ## alternative 1:
+  ## beta.hat = cov(x, y) / var(x)
+
+  ## alternative 2:
+  ## beta.hat = cor(x, y) * sd(y) / sd(x)
+
+  alpha.hat = mean(y) - beta.hat * mean(x)
+
+  list(alpha.hat = alpha.hat, beta.hat = beta.hat)
+}
+```
+
+```{r}
+model = my.regression(faithful$waiting, faithful$eruptions)
+plot(faithful$waiting, faithful$eruptions, xlab = "Waiting Time", ylab = "Eruption Time", main = "Old Faithful Data", lwd = 2)
+abline(model$alpha.hat, model$beta.hat, col = 'red', lwd = 3)
+```
+
+## (b) 
+
+Prediction based on the linear model: y = alpha + beta * x
+## 10 pts
+(predY = model$alpha.hat + model$beta.hat * 82)
+
+## (c)
+
+Note: they match!
+```{r}
+m = lm(faithful$eruptions ~ faithful$waiting)
+print(m$coefficients)
+print(model)
+```
+
+## (d) 
+
+We can conclude that the slope is significantly different from zero, so there is a relationship between the waiting time and the eruption time.
+```{r}
+summary(m)
+```

@@ -1,0 +1,170 @@
+---
+title: "Beta Prior for Bernoulli"
+author: "Tom Fletcher"
+date: "January 18, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+In this note we will look at the conjugate prior of the Bernoulli distribution, which is a Beta distribution. Recall that Bernoulli is the distribution for a binary random variable. The notation $X \sim \mathrm{Ber}(\theta)$ means $P(X = 1) = \theta$ and $P(X = 0) = 1 - \theta$. Now, if we are given $n$ realizations of this Bernoulli variable, the likelihood function for $\theta$ is
+
+$$\mathcal{L}(\theta) = \prod_{i=1}^n P(X = x_i | \theta) = \prod_{i=1}^n \theta^{x_i} (1-\theta)^{1-x_i}.$$
+
+If we let $k$ be the number of $x_i$ with value $1$, i.e., $k = \sum_i x_i$, the likelihood function is written in more simple form as
+
+$$\mathcal{L}(\theta) = \theta^k (1-\theta)^{n-k}.$$
+
+Now let's look at putting a Beta distribution on the parameter $\theta$ of the Bernoulli likelihood. The notation for the Beta distribution is $\theta \sim \mathrm{Beta}(\alpha, \beta)$, and its pdf is given by
+
+$$p(\theta) = \frac{1}{\mathrm{B}(\alpha, \beta)} \theta^{\alpha - 1} (1 - \theta)^{\beta - 1}, \quad\quad \text{for $\theta \in [0,1]$},$$
+
+where $\mathrm{B}(\alpha, \beta)$ is the Beta function.
+
+__Note:__ $\mathrm{Beta}(1, 1)$ is the same as the uniform distribution, $U(0, 1)$.
+
+```{r}
+## x-axis for plotting
+numSteps = 200
+x = seq(0, 1, 1 / numSteps)
+
+## Say we observe 30 coin flips, 18 heads, 12 tails
+## Likelihood function:
+k = 18
+n = 30
+L = x^k * (1 - x)^(n - k)
+
+## Just normalize likelihood to integrate to one (for purposes of plotting)
+L = L / sum(L) * numSteps
+
+
+### Uniform Prior
+## Plot likelihood
+
+plot(x, L, type = 'l', lwd = 3, ylim = c(0,6),
+     main = "Bernoulli Likelihood with Beta(1,1) Prior",
+     xlab = expression(theta), ylab = "pdf")
+
+## Plot Beta(1,1) prior
+lines(x, dbeta(x, 1, 1), lty = 3, lwd = 3, col = "blue")
+
+## Plot posterior
+lines(x, dbeta(x, k + 1, n - k + 1), lty = 3, lwd = 3, col = "red")
+
+legend("topright", c("Likelihood", "Prior", "Posterior"),
+       lty = c(1, 3, 3), lwd = 3, col = c("black", "blue", "red"))
+```
+
+```{r}
+### Beta(2, 2) Prior
+plot(x, L, type = 'l', lwd = 3, ylim = c(0,6),
+     main = "Bernoulli Likelihood with Beta(2,2) Prior",
+     xlab = expression(theta), ylab = "pdf")
+
+## Plot Beta(2,2) prior
+lines(x, dbeta(x, 2, 2), lty = 2, lwd = 3, col = "blue")
+
+## Plot posterior
+lines(x, dbeta(x, k + 2, n - k + 2), lty = 3, lwd = 3, col = "red")
+
+legend("topright", c("Likelihood", "Prior", "Posterior"),
+       lty = c(1, 2, 3), lwd = 3, col = c("black", "blue", "red"))
+```
+
+```{r}
+### Beta(10, 10) Prior
+plot(x, L, type = 'l', lwd = 3, ylim = c(0,6),
+     main = "Bernoulli Likelihood with Beta(10,10) Prior",
+     xlab = expression(theta), ylab = "pdf")
+
+## Plot Beta(1,1) prior
+lines(x, dbeta(x, 10, 10), lty = 2, lwd = 3, col = "blue")
+
+## Plot posterior
+lines(x, dbeta(x, k + 10, n - k + 10), lty = 3, lwd = 3, col = "red")
+
+legend("topright", c("Likelihood", "Prior", "Posterior"),
+       lty = c(1, 2, 3), lwd = 3, col = c("black", "blue", "red"))
+```
+
+```{r}
+### Beta(10, 10) Prior, but increase n by 10
+n = 300
+k = 180
+
+L = x^k * (1 - x)^(n - k)
+L = L / sum(L) * numSteps
+
+plot(x, L, type = 'l', lwd = 3, ylim = c(0,15),
+     main = "Bernoulli Likelihood with Beta(10,10) Prior (increased n)",
+     xlab = expression(theta), ylab = "pdf")
+
+## Plot Beta(10,10) prior
+lines(x, dbeta(x, 10, 10), lty = 2, lwd = 3, col = "blue")
+
+## Plot posterior
+lines(x, dbeta(x, k + 10, n - k + 10), lty = 3, lwd = 3, col = "red")
+
+legend("topright", c("Likelihood", "Prior", "Posterior"),
+       lty = c(1, 2, 3), lwd = 3, col = c("black", "blue", "red"))
+```
+
+## Laplace's Analysis of Sex Ratio at Birth
+
+Here y is the number of female births, n is total number of births
+in Paris from 1745 to 1770
+```{r}
+y = 241945
+n = y + 251527
+```
+
+### Frequentist Analysis
+First, let's look at the frequentist analysis.
+MLE for the proportion of female births
+```{r}
+(theta.hat = y / n)
+```
+
+Here is the 95% confidence interval (using a normal approximation):
+```{r}
+se = sqrt(theta.hat * (1 - theta.hat) / n)
+theta.hat + c(-se, se) * qnorm(0.975)
+```
+
+Here is the frequentist hypothesis test, again using a normal approximation.
+
+* Null hypothesis: $\theta = 0.5$
+* Alt hypothesis: $\theta < 0.5$
+
+Test statistic:
+```{r}
+alpha = 0.05
+(z = (theta.hat - 0.5) / (0.5 / sqrt(n)))
+```
+
+$p$-value:
+```{r}
+pnorm(z)
+```
+
+### Bayesian Analysis
+
+Now, let's look at Laplace's analysis (the Bayesian analysis). Assuming a uniform prior for $p(\theta)$.
+
+Posterior is given by $\mathrm{Beta}(y + 1, n - y + 1).$
+Posterior probability that more girls are born than boys is:
+$P(\theta >= 0.5 \mid y)$
+```{r}
+1 - pbeta(0.5, y + 1, n - y + 1)
+```
+
+Note this is zero up to numerical calculation of the beta integral
+We can compute the log probability, and use the fact that:
+$\log(1 - x)$ is approximately $-x$ for small $x$:
+```{r}
+-pbeta(0.5, y + 1, n - y + 1, log.p = TRUE)
+```
+
+Notice that the p-value and the posterior probability are actually quite similar. Go back and try some other values for y and n and re-run (particularly smaller sample sizes). How do the p-value and posterior probability compare?

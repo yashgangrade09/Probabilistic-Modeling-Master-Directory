@@ -1,0 +1,161 @@
+---
+title: "HW 3 Solutions"
+author: "Tom Fletcher"
+date: "October 19, 2017"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+__This solution set is for use by students in CS 3130 / ECE 3530 in Fall 2016 ONLY. Distribution outside of the class will be considered cheating.__
+
+# Problem 1
+
+We just enumerate all of the events defined by the random variable $X$:
+
+$$\{X = 1\} = \{HTH, THT\}$$
+
+$$\{X = 2\} = \{HHT, HTT, THH, TTH\}$$
+
+$$\{X = 3\} = \{HHH, TTT\}$$
+
+Because each outcome is equally likely, with probability $\frac{1}{8}, we get the pmf:
+
+$$p_X(1) = \frac{1}{4}, \quad p_X(2) = \frac{1}{2}, \quad p_X(3) = \frac{1}{4}.$$
+
+# Problem 2
+
+Set up the sample space:
+```{r}
+Omega = c('HHH', 'HHT', 'HTH', 'HTT', 'THH', 'THT', 'TTH', 'TTT')
+```
+
+Run 10,000 simulations:
+```{r}
+numSims = 10000
+sims = sample(Omega, size = numSims, replace = TRUE)
+```
+
+Estimate the pmf for $X$ by counting the occurrences for each value:
+```{r}
+p = numeric(3)
+p[1] = sum(sims == 'HTH' | sims == 'THT') / numSims
+p[2] = sum(sims == 'HHT' | sims == 'HTT' | sims == 'THH' | sims == 'TTH') / numSims
+p[3] = sum(sims == 'HHH' | sims == 'TTT') / numSims
+```
+
+Finally, the simulated pmf for $X$ is
+
+$$p_x \approx `r p`$$
+
+# Problem 3
+
+We first identify this as a __geometric distribution__ because we will keep playing the lotteries until our first success (we win at least one). Now, we need to define $p$, the probability of success, that is, the probability of winning at least one lottery. The probability of winning both lotteries is given by $p_1 \times p_2$ because they are independent. So, using inclusion exclusion, the probability of winning at least one is
+$$p = p_1 + p_2 - p_1 \times p_2.$$
+
+
+# Problem 4
+
+In the following answers, the random variable $X$ will denote the number
+of errors. An error has probability 10\%. You could also ``flip'' this and work
+with the number of successes: $Y = 50 - X$. The probability of a success is
+90\%.
+
+## (a)
+
+(1) Binomial pmf with $n = 50,$ $p = 0.1,$ $k = 8$ ($k$ is number of
+errors) or $n = 50,$ $p = 0.9,$ $k = 42$ ($k$ is number of successes). Formula
+is $P(X = 8) = {50 \choose 8}\, 0.1^8\, 0.9^{42}$.
+
+(2) 
+```{r}
+dbinom(8, 50, 0.1)
+```
+or 
+
+```{r}
+dbinom(42, 50, 0.9)
+```
+
+## (b)
+(1) Binomial cdf with $n = 50,$ $p = 0.1,$ $k = 5$ or $n = 50,$ $p =
+0.9,$ $k = 45$. Formula is $P(X \leq 5) = \sum_{i=1}^{5} {50 \choose i} \,
+0.1^i \, 0.9^{50 - i}.$
+
+(2) 
+```{r}
+pbinom(5, 50, 0.1)
+```
+or 
+
+```{r}
+1 - pbinom(44, 50, 0.9)
+```
+
+## (c)
+(1) Binomial pmf with $n = 50,$ $p = 0.1,$ $k = 0$ or $n = 50,$ $p =
+0.9,$ $k = 50$. Formula simplifies to $P(X = 0) = 0.9^{50}$
+
+(2) 
+```{r}
+dbinom(0, 50, 0.1)
+```
+or simply 
+```{r}
+0.9^50
+```
+
+
+# Problem 5
+
+Simulate the number of successes for the system using binomial random variable (`rbinom`):
+```{r}
+N = 10000
+x = rbinom(N, size = 50, prob = 0.9)
+```
+
+## (a)
+Simulated probability of exactly 8 errors:
+```{r}
+sum(x == 42) / N
+```
+
+## (b)
+Simulated probability of 5 or fewer errors:
+```{r}
+sum(x >= 45) / N
+```
+
+## (c)
+Simulated probability of a perfect day:
+```{r}
+sum(x == 50) / N
+```
+
+# Problem 5
+
+## (a)
+
+More girls: Let $X$ be a geometric random variable (with $p =
+0.5$). Then ``more girls'' happens if $X = 1$, ``boys = girls'' happens if $X =
+2$, and ``more boys'' happens if $X > 2$. $P(X = 1) = 0.5$, $P(X = 2) = 0.25$,
+so $P(X > 2) = 0.25$.
+
+## (b)
+
+Formula for $k$ boys:
+
+$P(X = k+1) = 0.5^{k + 1}$
+
+## (c)
+
+Still more girls: $P(X = 1) = 0.4$ is still higher than $P(X > 2) =
+0.36$.
+
+## (d)
+
+Formula for $k$ boys: 
+
+$P(X = k+1) = 0.6^k \cdot 0.4$

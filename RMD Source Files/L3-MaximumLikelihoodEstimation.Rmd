@@ -1,0 +1,148 @@
+---
+title: "Maximum Likelihood Estimation"
+author: "Tom Fletcher"
+date: "January 16, 2018"
+output: html_document
+---
+
+The purpose of these notes is to review the definition of a *maximum likelihood
+estimate* (MLE), and show that the sample mean is the MLE of the $\mu$
+parameter in a Gaussian. For more details about MLEs, see the Wikipedia
+article:
+
+<https://en.wikipedia.org/wiki/Maximum_likelihood>
+
+Consider a random sample $X_1, X_2, \ldots, X_n$ coming from a distribution
+with parameter $\theta$ (for example, they could be from a Gaussian
+distribution with parameter $\mu$). Remember the terminology "random sample"
+means that $X_i$ random variables are independent and identically distributed
+(i.i.d.). Furthermore, let's assume that each $X_i$ has a probability density
+function $p_{X_i}(x; \theta)$. Given a realization of our random sample,
+$x_1, x_2, \ldots, x_n$, (remember, these are the actual *numbers* that we
+have observed), we define the *likelihood function* $\mathcal{L}(\theta)$ as
+follows:
+$$
+\begin{aligned}
+\mathcal{L}(\theta) &= p_{X_1, \ldots, X_n}(x_1, x_2, \ldots, x_n; \theta),
+  & \text{}\\
+&= \prod_{i=1}^n p_{X_i}(x_i; \theta), 
+  &\text{using independence of the $X_i$.}\\
+\end{aligned}
+$$
+Here, $p_{X_1, \ldots, X_n}$ is the joint pdf for all of the $X_i$ variables.
+This pdf depends on the value of the parameter $\theta$ for the distribution,
+so that is in the notation after the semicolon. Notice an important point, we
+are treating the $x_i$ as constants (they are the data that we've observed) and
+$\mathcal{L}$ is a function of $\theta$. Maximum likelihood now says that we
+want to maximize this likelihood function as a function of $\theta$.
+
+Now, let's work this out for the Gaussian case, i.e., let 
+$X_1, X_2, \ldots, X_n \sim N(\mu, \sigma^2)$. We will focus only on the MLE of
+the $\mu$ parameter, essentially treating $\sigma^2$ as a known constant for
+simplicity of the example. The likelihood function looks like this:
+$$
+\begin{aligned}
+\mathcal{L}(\mu) &= p_{X_1, \ldots, X_n}(x_1, x_2, \ldots, x_n; \mu),
+  & \text{}\\
+%
+&= \prod_{i=1}^n p_{X_i}(x_i; \theta),
+  &\text{using independence of the $X_i$,}\\
+%
+&= \prod_{i=1}^n \frac{1}{\sqrt{2 \pi}} 
+  \exp\left(-\frac{1}{2\sigma^2} (x_i -  \mu)^2\right),
+  &\text{using Gaussian pdf for each $X_i$,}\\
+%
+&= \left(\frac{1}{\sqrt{2 \pi} \sigma}\right)^n 
+  \exp\left(-\frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2\right),
+  &\text{product turns into a sum inside $\exp$.}
+\end{aligned}
+$$
+
+To maximize this function, it is easier to think about maximizing it's natural
+log. We can do this because $\ln$ is a monotonically increasing function, so
+the value of $\mu$ that maximizes $\mathcal{L}$ also maximizes
+$\ln \mathcal{L}$. So, the *log likelihood function* is defined as
+$$
+\ell(\mu) = \ln \mathcal{L}(\mu)
+  = -\frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2 + C,
+$$
+where $C$ is a constant in $\mu$ (we don't need it to maximize $\ell$). Now,
+defining our estimate of $\mu$ to maximize the log likelihood, we get
+$$
+\hat{\mu} = \arg \max_{\mu}\; \ell(\mu)
+  = \arg \min_{\mu} \sum_{i=1}^n (x_i - \mu)^2.
+$$
+Notice we changed the sign in the last equality, and this changes us from a max
+to a min problem. This is called *least squares*, as we are minimizing the
+sum-of-squared differences from the $\mu$ to our data $x_i$. We can solve this
+maximization problem exactly using the fact (from calculus) that the derivative
+of $\ell$ with respect to $\mu$ will be zero at a maxima. We get
+$$
+0 = \frac{d}{d\mu} \ell(\mu) = \frac{d}{d\mu} \sum_{i=1}^n (x_i - \mu)^2 =
+  2n\mu - 2\sum_{i=1}^n x_i.
+$$
+Solving for $\mu$, we get the sample mean as the MLE:
+$$\hat{\mu} = \frac{1}{n} \sum_{i=1}^n x_i.$$
+
+Here is some R code demonstrating the above MLE of the mean of a Gaussian.
+First, we generate a random sample from a normal distribution.
+```{r}
+## Start by generating a sample from a normal distribtion
+n = 20     ## Number of data points to generate
+mu = 3     ## Mean of Gaussian
+sigma = 2  ## Standard deviation of Gaussian
+
+## rnorm function in R generates Gaussian (pseudo)random variables
+x = rnorm(n, mean = mu, sd = sigma)
+```
+
+Next, we plot the likelihood functions, $p(x_i | \mu)$, for each of the points separately.
+```{r}
+## This sequence is for the x-axis in our plots
+t = seq(mu - 3*sigma, mu + 3*sigma, sigma/20)
+
+## This sets the plot margins
+par(mai=c(1.4, 1.4, 1, 0.5))
+
+## Plot individual likelihoods for each data point
+## The dnorm function evaluates the pdf of the Gaussian
+plot(t, dnorm(t, mean = x[1], sd = sigma), type='l', lwd = 2,
+     main = "Individual Likelihoods Per Point",
+     ylab = expression(paste("L(", mu, " ; x"[i], ")")),
+     xlab = expression(mu), cex.lab = 1.5, cex.main = 1.5)
+for(i in 2:n)
+  lines(t, dnorm(t, x[i], sigma), lwd = 2)
+```
+
+Next, we plot the likelihood function for all of the data, and draw a vertical
+line at the sample mean of the data to see that it is indeed at the maximum.
+```{r}
+## Compute the likelihood function for all of the data
+lik = 1
+for(i in 1:n)
+  lik = lik * dnorm(t, x[i], sigma)
+
+## Plot the likelihood
+## NOTE: This will not work if you set n large enough!
+plot(t, lik, type='l', lwd = 3,
+     main = "Likelihood Function",
+     ylab = expression(paste("L(", mu, " ; x)")),
+     xlab = expression(mu), cex.lab = 1.5, cex.main = 1.5)
+
+## Draw a vertical line at the mean value of the data
+abline(v = mean(x), col='blue', lwd = 3, lty = 2)
+```
+
+Finally, we plot the log-likelihood function (which is just a quadratic).
+```{r}
+## Now compute the average log likelihood of the data and plot it
+log.lik = 0
+for(i in 1:n)
+  log.lik = log.lik + (1/n) * log(dnorm(t, x[i], sigma))
+
+plot(t, log.lik, type='l', lwd = 3,
+     main = "Average Log-Likelihood Function",
+     ylab = expression(paste("l(", mu, " ; x)")),
+     xlab = expression(mu), cex.lab = 1.5, cex.main = 1.5)
+abline(v = mean(x), col='blue', lwd = 3, lty = 2)
+```

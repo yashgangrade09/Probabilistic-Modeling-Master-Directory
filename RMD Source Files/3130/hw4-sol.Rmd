@@ -1,0 +1,77 @@
+---
+title: "HW 4 Solutions"
+author: "Tom Fletcher"
+date: "October 19, 2017"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+
+__This solution set is for use by students in CS 3130 / ECE 3530 in Fall 2017 ONLY. Distribution outside of the class will be considered cheating.__
+
+# Problem 1
+
+Throughout this problem, we are using $X \sim N(85, 5^2)$, that is,
+a normal distribution with parameters $\mu = 85$ and $\sigma = 5$.
+
+## (a)
+
+Using the cdf and the complement rule, the probability of being greater than 90 is $P(X > 90) = 1 - P(X \leq 90)$:
+
+```{r}
+1 - pnorm(90, mean = 85, sd = 5)
+```
+
+## (b)
+
+Quantile at 0.95:
+
+```{r}
+qnorm(0.95, mean = 85, sd = 5)
+```
+
+## (c)
+
+Using the cdf twice, we get $P(70 \leq X \leq 80) = P(X \leq 80) - P(X \leq 70)$:
+
+```{r}
+pnorm(80, mean = 85, sd = 5) - pnorm(70, mean = 85, sd = 5)
+```
+
+# Problem 2
+
+First, simple integration gives the cdf:
+$$F(x) =
+\begin{cases}
+0 & \text{for $x < 0$}\\
+2x^2 & \text{for $0 \leq x \leq \frac{1}{2}$}\\
+4x - 2x^2 - 1 & \text{for $\frac{1}{2} \leq x \leq 1$}\\
+1 & \text{for $x > 1$}\\
+\end{cases}$$
+
+## (a)
+$F(0.55) = 4 \cdot 0.55 - 2 \cdot 0.55^2 - 1 = 0.595$
+
+## (b)
+Find the 50th percentile by solving for the $x$ that satisfies:
+$F(x) = 0.5$
+
+This occurs at $x = 0.5$.
+
+
+# Problem 3
+
+Let $X$ be the time between user requests. We know that $X \sim
+\mathit{Exp}(\lambda)$, but we don't know $\lambda$. The event "the next user has to wait" is $\{X \leq 1\}$ because if the next request comes in under one minute, we will still be processing the previous request. We want to know the rate $\lambda$ that will cause this event to have 10\% probability. So, using the exponential cdf, we get $0.10 = P(X \leq 1) = 1 - \exp(-\lambda)$. Solving for $\lambda$ gives $\lambda = -\log(0.9) \approx `r -log(0.9)`$ (in requests/min). Also, any slower rate will result in an even lower probability of waiting.
+
+
+# Problem 4
+
+We are looking for the $0.5$ quantile, $q_{0.5}$. (Let's call the median
+$m = q_{0.5}$ to simplify the notation.) This will be $m = F^{-1}(0.5)$, where
+$F$ is the Pareto cdf. In other words, we can write $0.5 = F(m)$, and solve for
+the unknown $m$. Writing this out, we have $0.5 = F(m) = 1 -
+\frac{1}{m^\alpha}$. Solving for $m$, we get $m = 2^{\frac{1}{\alpha}}$, i.e.,
+$m = \sqrt[\alpha]{2}$

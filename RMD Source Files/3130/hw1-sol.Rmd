@@ -1,0 +1,131 @@
+---
+title: "HW 1 Solutions"
+author: "Tom Fletcher"
+date: "September 12, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+__This solution set is for use by students in CS 3130 / ECE 3530 in Fall 2017 ONLY. Distribution outside of the class will be considered cheating.__
+
+# Problem 1
+
+The given events are $R$ = "person is rich" and $F$ = "person is famous".
+
+a. The person is not famous: $F^c$
+
+b. The person is rich but not famous: $R - F$
+
+c. The person is either rich or famous (or both): $R \cup F$
+
+d. The person is neither rich nor famous: $(R \cup F)^c,$ or equivalently, $R^c \cap F^c$
+
+# Problem 2
+
+The given probabilities are $P(R) = 0.16$, $P(F) = 0.10$, and $P(R \cap F) = 0.08$.
+
+a.
+$$
+\begin{align}
+P(F^c) &= 1 - P(F) &\text{Complement rule}\\
+       &= 1 - 0.10 & \\
+       &= 0.9     & \\
+\end{align}
+$$
+
+b.
+$$
+\begin{align}
+P(R - F) &= P(R) - P(R \cap F) &\text{Difference rule}\\
+         &= 0.16 - 0.08 & \\
+         &= 0.08        & \\
+\end{align}
+$$
+
+c.
+$$
+\begin{align}
+P(R \cup F) &= P(R) + P(F) - P(R \cap F) &\text{Inclusion-Exclusion rule}\\
+            &= 0.16 + 0.10 - 0.08 & \\
+            &= 0.18               & \\
+\end{align}
+$$
+
+d.
+$$
+\begin{align}
+P((R \cup F)^c) &= 1 - P(R \cup F) &\text{Complement rule}\\
+                &= 1 - 0.18        &\text{From part c.}\\
+                &= 0.82            & \\
+\end{align}
+$$
+
+# Problem 3
+
+a.
+\begin{align}
+P(A \cap B^c) &= P(A) - P(A \cap B) &\text{Difference Rule}\\
+              &= P(A) - P(B)        &\text{Because $B \subseteq A$}\\
+\end{align}
+
+b.
+$A \cap B^c$ = "the software crashed due to a cause other than a segmentation fault"
+
+c.
+$$P(A \cap B^c) = P(A) - P(B) = 0.05 - 0.02 = 0.03$$
+
+# Problem 4
+
+The given probabilities are $P(A) = 1/3, P(B) = 1/2,$ and $P(A \cup B) = 3/4$.
+
+a.
+$$P(A \cap B) = P(A) + P(B) - P(A \cup B) = 1/3 + 1/2 - 3/4 = 1/12$$
+
+(using Inclusion-Exclusion Rule)
+
+b.
+$$P(A^c \cup B^c) = P((A \cap B)^c) = 1 - P(A \cap B) = 11/12$$
+
+(using DeMorgan's Law, Complement Rule, and answer in part (a))
+
+# Problem 5
+
+Let $A$ be the event "both bills are the same denomination":
+$$A = \{ (1,1), (5,5), (10,10) \}.$$
+
+The sample space $\Omega$ contains all pairs of two bills from six possible choices. The size of $\Omega$ is
+$$|\Omega| = {{6}\choose{2}} = \frac{6!}{2!4!} = 15$$
+
+Finally,
+$$P(A) = \frac{|A|}{|\Omega|} = \frac{3}{15} = \frac{1}{5}$$
+
+_Alternate solution:_ You pick the first bill. No matter what value you selected, there are 4 bills left that don't match and 1 bill left that does match. So, there is a 1/5 probability that you will select the matching bill.
+
+# Problem 6
+
+a.
+Events $B1, W1$ are "black top" or "white top", and events $B2, W2$ are "black bottom" or "white bottom".
+
+ First Events    | Second Events            | Joint Probabilities       |
+-----------------|--------------------------|---------------------------|
+ $P(B1) = 0.5$   | $P(B2 \mid B1) = 0.75$   | $P(B1 \cap B2) = 0.375$   |
+ <br>            | $P(W2 \mid B1) = 0.25$   | $P(B1 \cap W2) = 0.125$   |
+ $P(W1) = 0.5$   | $P(B2 \mid W1) = 0.25$   | $P(W1 \cap B2) = 0.125$   |
+ <br>            | $P(W2 \mid W1) = 0.75$   | $P(W1 \cap W2) = 0.375$   |
+
+b.
+$P(W1) = \frac{1}{2}$, directly from the tree in (a)
+
+c.
+$P(B2 | W1) = \frac{1}{4}$, directly from the tree in (a)
+
+d.
+$P(B2) = P(B2 \cap B1) + P(B2 \cap W1) = \frac{3}{8} + \frac{1}{8} =
+\frac{1}{2}$ (Total Probability)
+
+__OR__
+
+$P(B2) = P(B1) = \frac{1}{2}$ (symmetry argument - top and bottom are same)

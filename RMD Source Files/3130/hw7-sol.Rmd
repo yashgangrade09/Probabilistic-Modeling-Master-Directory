@@ -1,0 +1,189 @@
+---
+title: "HW 7 Solutions"
+author: "Tom Fletcher"
+date: "December 6, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "")
+```
+
+__This solution set is for use by students in CS 3130 / ECE 3530 in Fall 2017 ONLY. Distribution outside of the class will be considered cheating.__
+
+## Problem 1
+
+### (a)
+
+__This problem was optional extra credit. You may skip over this solution if you are so inclined.__
+
+First, we know that each $X_i$ is a positive integer. Therefore, the following is true:
+$$\frac{1}{X_1 + X_2 + \cdots + X_n} \leq \frac{1}{X_1} + \frac{1}{X_2} + \cdots + \frac{1}{X_n}.$$
+
+Next, this leads to the following inequality (using linearity of expectation):
+$$E[T] = E\left[\frac{1}{\bar{X}_n}\right] = E\left[\frac{n}{X_1 + X_2 + \cdots + X_n}\right] \leq n E\left[\frac{1}{X_1}\right] +n E\left[\frac{1}{X_2}\right] + \cdots + n E\left[\frac{1}{X_n}\right].$$
+
+So, we've reduced the problem to finding the expected value of $1/X_i$. Going back to the definition of expectation, and using the pmf for geometric, we get:
+$$E\left[ \frac{1}{X_i} \right] = \sum_{i=1}^\infty \frac{1}{k} P(X_i = k) = \sum_{i=1}^\infty \frac{1}{k} (1-p)^{k-1} p = \frac{p \log (1-p)}{1-p}$$
+
+The last step is using an identity from calculus for the infinite series. Note $\log x < x$ for $0 \leq x \leq 1$, so we get:
+$$E\left[ \frac{1}{X_i} \right] = \frac{p \log (1-p)}{1-p} < p.$$
+
+Putting this all together, we see that $T$ is biased negatively (expected value less than $p$):
+
+$$E[T] = E\left[\frac{1}{\bar{X}_n}\right] = E\left[\frac{1}{X_1 + X_2 + \cdots + X_n}\right] \leq n E\left[\frac{1}{X_1}\right] + E\left[\frac{1}{X_2}\right] + \cdots + E\left[\frac{1}{X_n}\right] < 
+
+### (b)
+
+__20 pts total__
+
+* __16 pts for Binomial or Bernoulli, but minor mistakes__
+* __8 pts default for some reasonable attempt, but no Bin or Ber__
+
+Even though the random variables $X_i$ are geometric, this problem is really about estimating the probability of a Bernoulli distribution! Convert the $X_i$ into a Bernoulli random variable $Y_i$ as follows:
+$$Y_i = 
+\begin{cases} 
+1 & \text{if $X_i \leq 3$}\\
+0 & \text{if $X_i > 3$}\\
+\end{cases}$$
+
+Then the statistic from the problem is equivalent to the sample mean of $Y_i$:
+$$S = \frac{\text{# of $X_i \leq 3$}}{n} = \frac{\sum_{i=1}^n Y_i}{n} = \bar{Y}_n.$$
+
+We already learned that the sample mean statistic for a Bernoulli, $Y_i \sim \mathrm{Ber}(p)$, is an unbiased estimator for the probability $p$.
+
+## Problem 2
+
+### (a)
+
+__8 pts total__
+
+* __4 pts for 2 x mean__
+* __4 pts for arguing it is unbiased (default 2pts for mistkaes)__
+
+We know the mean statistic, $\bar{X}_{10}$, has expected value that is the same as the expected value of the original random variables.
+$$E[\bar{X}_{10}] = E[X_i]$$
+
+We also know that the original random variables are binomial, $X_i \sim \mathrm{Bin}(n, 0.5)$. Remember, that is $n$ trials of a coin flip with 0.5 probability for heads/tails, and we don't know $n$. The expected value of a Binomial is:
+$$E[X_i] = np = \frac{n}{2}.$$
+
+So, the mean statistic is off by a factor of $\frac{1}{2}$. This suggests we can correct this factor by multiplying the mean statistic by 2. Using linearity of expectation, this will cancel that $\frac{1}{2}$ factor for us. So, our statistic to estimate $n$ is:
+$$\hat{n} = 2 \bar{X}_{10} = \frac{1}{5} \sum_{i=1}^{10} X_i.$$
+
+It is unbiased:
+
+$$
+\begin{aligned}
+\mathrm{bias}(\hat{n}) &= E[\hat{n}] - n        & \text{Definition of bias}\\
+                       &= E[2 \bar{X}_{10}] - n & \text{Definition of $\hat{n}$}\\
+                       &= 2 E[\bar{X}_{10}] - n   & \text{Linearity of expectation}\\
+                       &= 2 E[X_i] - n          & \text{Mean expectation same as $X_i$}\\
+                       &= 2 \frac{n}{2} - n     & \text{Expectation of Binomial}\\
+                       &= 0                     & \text{That's what we wanted!}\\
+\end{aligned}
+$$
+
+### (b)
+
+Do the simulation of $\hat{n}$:
+
+```{r}
+## Sample size of each experiment (number of coin flips)
+n = 25
+## Number of times to repeat the experiment
+numSims = 10000
+
+sims = matrix(rbinom(10 * numSims, size = n, prob = 0.5), 10, numSims)
+
+nHats = colMeans(sims) * 2
+```
+
+### (c)
+
+```{r}
+## Boxplot of the nHat statistics
+boxplot(nHats, main = "Estimates of n")
+abline(n, 0, col = 'red', lwd = 3)
+```
+
+### (d)
+
+```{r}
+## Plot a histogram of the nHat statistics with a Gaussian pdf on top
+hist(nHats, freq = FALSE, main = "Estimates of n")
+
+t = seq(20, 30, 0.01)
+lines(t, dnorm(t, mean = mean(nHats), sd = sd(nHats)), lwd = 3, col = 'blue')
+```
+
+## Problem 3
+
+This problem asked you to use `qnorm`, which is the Gaussian approximation. But several of you realized that the Student $t$ distribution is more appropriate because the book gives you the sample standard deviation (the Gaussian approximation assumes this is the "true" standard deviation of the distribution.) So, we will accept either answer.
+
+First, here is the Gaussian approximation interval:
+```{r}
+ln = 93.5 - qnorm(0.975) * 0.75 / sqrt(10)
+un = 93.5 + qnorm(0.975) * 0.75 / sqrt(10)
+cat("Gaussian approximation confidence interval: (", ln, ",", un, ")\n\n")
+
+```
+
+Second, here is the Student $t$ interval:
+```{r}
+ln = 93.5 - qt(0.975, df = 9) * 0.75 / sqrt(10)
+un = 93.5 + qt(0.975, df = 9) * 0.75 / sqrt(10)
+cat("Student t confidence interval: (", ln, ",", un, ")\n\n")
+```
+
+## Problem 4
+
+```{r}
+xBar = 0.5 * (1.6 + 7.8)
+sn = (7.8 - xBar) * 4 / qt(0.975, df = 15)
+ln = xBar - qt(0.995, df = 15) * sn / 4
+un = xBar + qt(0.995, df = 15) * sn / 4
+
+cat("(a) The mean is =", xBar, "\n")
+cat("(b) The 99% confidence interval is = (", ln, ",", un, ")\n\n")
+```
+
+## Problem 5
+
+### (a)
+
+```{r}
+x = iris$Sepal.Width[iris$Species == "virginica"]
+
+n = length(x)
+ln = mean(x) - qnorm(0.975) * sd(x) / sqrt(n)
+un = mean(x) + qnorm(0.975) * sd(x) / sqrt(n)
+cat("Gaussian 95% confidence interval is = (", ln, ",", un, ")\n")
+```
+
+### (b)
+```{r}
+ln = mean(x) - qt(0.975, df = n - 1) * sd(x) / sqrt(n)
+un = mean(x) + qt(0.975, df = n - 1) * sd(x) / sqrt(n)
+cat("Student t 95% confidence interval is = (", ln, ",", un, ")\n")
+```
+
+### (c)
+```{r}
+y = x[1:10]
+n = 10
+ln = mean(y) - qnorm(0.975) * sd(y) / sqrt(n)
+un = mean(y) + qnorm(0.975) * sd(y) / sqrt(n)
+
+cat("Gaussian 95% confidence interval is = (", ln, ",", un, ")\n")
+
+ln = mean(y) - qt(0.975, df = n - 1) * sd(y) / sqrt(n)
+un = mean(y) + qt(0.975, df = n - 1) * sd(y) / sqrt(n)
+cat("(c) Student t 95% confidence interval is = (", ln, ",", un, ")\n")
+```
+
+### (d)
+
+The decrease in sample size makes both the Gaussian approximation and Student
+$t$ intervals wider. But the difference between the two becomes more drastic
+than what we saw with the larger sample size in parts (a) - (b). The Student
+$t$ confidence interval is much wider now.
